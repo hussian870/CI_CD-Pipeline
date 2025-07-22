@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Load environment variables
+        run: cp env/dev.env .env
+
+      - name: Run build script
+        run: bash scripts/build.sh
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Load environment variables
+        run: cp env/dev.env .env
+
+      - name: Run test script
+        run: bash scripts/test.sh
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Load environment variables
+        run: cp env/dev.env .env
+
+      - name: Deploy application
+        run: bash scripts/deploy.sh
+        env:
+          CLOUD_API_KEY: ${{ secrets.CLOUD_API_KEY }}
+
